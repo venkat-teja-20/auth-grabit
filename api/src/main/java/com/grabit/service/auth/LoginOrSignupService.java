@@ -5,17 +5,19 @@ import com.grabit.Utilities.ModelMapperUtility;
 import com.grabit.Utilities.Utility;
 import com.grabit.bean.member.LoginDetailsDTO;
 import com.grabit.bean.member.MemberDTO;
+import com.grabit.entity.Permission;
+import com.grabit.entity.Role;
+import com.grabit.enums.AccessLevel;
 import com.grabit.enums.RolesList;
 import com.grabit.exception.CustomException;
 import com.grabit.feign.MemberInterface;
-import com.grabit.mapper.MemberUrlMapper;
 import com.grabit.repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -38,11 +40,12 @@ public class LoginOrSignupService {
                 throw new CustomException(Utility.buildErrorObject("INVALID_USER", "Only role 'USER' is allowed for a member", 400, "signUp"));
             MemberDTO memberSignUpRequest = ModelMapperUtility.map(request, MemberDTO.class);
             response = memberInterface.createMemberProfile(memberSignUpRequest, null);
-            Long id = roleRepository.findIdByRole(RolesList.USER).orElseThrow(() -> new EntityNotFoundException("No role exists with role : " + RolesList.USER));
+            Role role= roleRepository.findByRole(RolesList.USER).orElseThrow(() -> new EntityNotFoundException("No role exists with role : " + RolesList.USER));
             if (response.getBody() == null) {
                 throw new CustomException(Utility.buildErrorObject("INVALID_RESPONSE", "No Response from member service", 500, "signUp"));
             }
-            return ResponseEntity.ok(Map.of("Authorization", JWTUtil.generateTokenForEndUser(response.getBody(), id)));
+            List<Long> permissionIds=role.getPermissions().stream().map(Permission::getId).toList();
+            return ResponseEntity.ok(Map.of("Authorization", JWTUtil.generateTokenForEndUser(response.getBody(), role.getId(),permissionIds, AccessLevel.member.name())));
         } catch (Exception e) {
             if(response!=null && response.hasBody() && response.getStatusCode().is2xxSuccessful()){
                 memberInterface.memberDelete(String.valueOf(response.getBody().getId()));

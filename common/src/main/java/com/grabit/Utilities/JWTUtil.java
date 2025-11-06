@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -19,11 +20,12 @@ public class JWTUtil {
 
     private static final SecretKey SECRET_KEY= Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    public static String generateTokenForEndUser(MemberDTO memberDTO,Long roleId){
+    public static String generateTokenForEndUser(MemberDTO memberDTO, Long roleId, List<Long> permissionIds,String accessLevel){
         Map<String,Object> claims=new HashMap<>();
         claims.put("role",roleId);
-        claims.put("member_id",memberDTO.getId());
-        claims.put("access_level","member");
+        claims.put("user_id",memberDTO.getId());
+        claims.put("access_level",accessLevel);
+        claims.put("permissions",permissionIds);
         long now = System.currentTimeMillis();
         Date iat = new Date(now);
         Date exp = new Date(now + EXPIRATION_TIME);
