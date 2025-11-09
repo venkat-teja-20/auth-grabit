@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.grabit.enums.CommonErrors;
 import com.grabit.exception.APIError;
 import com.grabit.exception.CustomException;
+import com.grabit.exception.JwtAuthenticationException;
 import feign.FeignException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -107,6 +108,12 @@ public class APIExceptionHandler {
     public APIError handleEntityNotFoundException(EntityNotFoundException ex, HttpServletResponse response) {
         response.setStatus(404);
         return new APIError("DATA_NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(value = JwtAuthenticationException.class)
+    public APIError handleJwtAuthenticationException(JwtAuthenticationException ex, HttpServletResponse response){
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        return ex.getAuthenticationError();
     }
 
     @ExceptionHandler(value = FeignException.class)

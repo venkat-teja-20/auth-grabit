@@ -13,7 +13,7 @@ import java.util.Map;
 @FeignClient(name = "memberservice")
 public interface MemberInterface {
     @GetMapping(value = "/member/credentials",produces = MediaType.APPLICATION_JSON_VALUE)
-    public LoginDetailsDTO getDetails(@RequestParam(value = "mobile") String mobile);
+    public LoginDetailsDTO getDetails(@RequestParam(value = "email") String email);
 
     @PostMapping(value = "/member/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MemberDTO> createMemberProfile(@RequestBody MemberDTO request, @RequestHeader Map<String, String> headers);
