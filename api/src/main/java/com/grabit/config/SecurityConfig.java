@@ -19,7 +19,10 @@ public class SecurityConfig {
             "/role/*/permission/*/assign",
             "/member/signup",
             "/role/permissions",
-            "/admin/signup"
+            "/admin/signup",
+            "/member/login",
+            "/role/*/",
+            "/member/token/refresh"
     };
 
     public SecurityConfig(HandleAuthenticationEntryPoint authenticationEntryPoint) {

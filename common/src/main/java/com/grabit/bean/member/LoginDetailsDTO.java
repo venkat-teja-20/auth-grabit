@@ -11,6 +11,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LoginDetailsDTO {
+    @JsonProperty("id")
+    private Long id;
 
     @JsonProperty("phone_number")
     private String phoneNumber;

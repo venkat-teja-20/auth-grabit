@@ -36,7 +36,7 @@ public class RoleAndPermissionService {
 
     @Transactional
     public RoleDTO addRole(RoleDTO request) {
-        RolesList givenRole = RolesList.fromValue(request.getRole());
+        RolesList givenRole = request.getRole();
         if (roleRepository.findByRole(givenRole).isPresent()) {
             throw new EntityExistsException("A role already exists with name : " + givenRole);
         }
@@ -82,5 +82,13 @@ public class RoleAndPermissionService {
         Role savedRole=roleRepository.save(role);
         log.info("Saved Permission to the Role : "+Utility.toJson(savedRole));
         return ModelMapperUtility.map(savedRole,RoleDTO.class);
+    }
+
+    public RoleDTO getRoleById(String id){
+        if(!Utility.isNumeric(id))
+            throw new CustomException(Utility.buildErrorObject("INVALID_ROLE_ID","Role provided is not valid",400,"getRoleById"));
+        Role role=roleRepository.findById(Long.valueOf(id)).orElseThrow(()->new EntityNotFoundException("No role exists with role id : "+id));
+        return ModelMapperUtility.map(role,RoleDTO.class);
+
     }
 }
