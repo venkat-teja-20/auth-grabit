@@ -22,7 +22,9 @@ public class SecurityConfig {
             "/admin/signup",
             "/member/login",
             "/role/*/",
-            "/member/token/refresh"
+            "/member/token/refresh",
+            "/webhook/cache/redis/refresh",
+            "/cache-details/*"
     };
 
     public SecurityConfig(HandleAuthenticationEntryPoint authenticationEntryPoint) {
