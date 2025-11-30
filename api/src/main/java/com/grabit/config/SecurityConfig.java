@@ -23,7 +23,8 @@ public class SecurityConfig {
             "/member/login",
             "/role/*/",
             "/member/token/refresh",
-            "/webhook/cache/redis/refresh"
+            "/webhook/cache/redis/refresh",
+            "/cache-details/*"
     };
 
     public SecurityConfig(HandleAuthenticationEntryPoint authenticationEntryPoint) {
