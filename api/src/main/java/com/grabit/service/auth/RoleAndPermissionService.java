@@ -9,12 +9,14 @@ import com.grabit.entity.Role;
 import com.grabit.enums.PermissionsList;
 import com.grabit.enums.RolesList;
 import com.grabit.exception.CustomException;
+import com.grabit.helper.auth.RedisHelper;
 import com.grabit.helper.auth.RoleAndPermissionHelper;
 import com.grabit.repository.PermissionsRepository;
 import com.grabit.repository.RoleRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,9 +31,12 @@ public class RoleAndPermissionService {
 
     private final PermissionsRepository permissionsRepository;
 
-    public RoleAndPermissionService(RoleRepository roleRepository, PermissionsRepository permissionsRepository) {
+    private final RedisTemplate<String,Object> redisTemplate;
+
+    public RoleAndPermissionService(RoleRepository roleRepository, PermissionsRepository permissionsRepository, RedisTemplate<String, Object> redisTemplate) {
         this.roleRepository = roleRepository;
         this.permissionsRepository = permissionsRepository;
+        this.redisTemplate = redisTemplate;
     }
 
     @Transactional
@@ -40,14 +45,27 @@ public class RoleAndPermissionService {
         if (roleRepository.findByRole(givenRole).isPresent()) {
             throw new EntityExistsException("A role already exists with name : " + givenRole);
         }
-        Role role = ModelMapperUtility.map(request, Role.class);
-        if (role.getPermissions() == null)
-            role.setPermissions(new HashSet<>());
-        if (!role.getPermissions().isEmpty()) {
-            role.setPermissions(role.getPermissions().stream().peek(permission -> permission.getRoles().add(role)).collect(Collectors.toSet()));
+        Role role = new Role();
+        role.setRole(request.getRole());
+        role.setPermissions(new HashSet<>());
+        if (!request.getPermissions().isEmpty()) {
+            for (PermissionDTO permissionDTO : request.getPermissions()) {
+
+                Permission permission = permissionsRepository
+                        .findByPermission(permissionDTO.getPermission())
+                        .orElseGet(() -> {
+                            Permission newPermission = new Permission();
+                            newPermission.setPermission(permissionDTO.getPermission());
+                            return permissionsRepository.save(newPermission);
+                        });
+
+                role.getPermissions().add(permission);
+            }
         }
         Role savedRole = roleRepository.save(role);
         log.info("Saved Role : "+Utility.toJson(savedRole));
+        RedisHelper redisHelper=new RedisHelper(redisTemplate);
+        redisHelper.addOrUpdateRoleDetailsToRedis(savedRole,"role");
         return ModelMapperUtility.map(savedRole, RoleDTO.class);
     }
 
@@ -81,6 +99,8 @@ public class RoleAndPermissionService {
         role.getPermissions().add(permission);
         Role savedRole=roleRepository.save(role);
         log.info("Saved Permission to the Role : "+Utility.toJson(savedRole));
+        RedisHelper redisHelper=new RedisHelper(redisTemplate);
+        redisHelper.addOrUpdateRoleDetailsToRedis(role,"role");
         return ModelMapperUtility.map(savedRole,RoleDTO.class);
     }
 
