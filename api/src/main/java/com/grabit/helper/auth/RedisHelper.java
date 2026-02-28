@@ -33,7 +33,7 @@ public class RedisHelper {
                 System.out.println(redisTemplate.opsForValue().get(key));
             }
         } catch (Exception e){
-            log.error("Error while adding/updating role in redis : "+e);
+            log.error("Error while printing role details from redis : "+e);
         }
     }
 }

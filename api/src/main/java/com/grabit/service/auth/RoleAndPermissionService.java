@@ -65,7 +65,7 @@ public class RoleAndPermissionService {
         Role savedRole = roleRepository.save(role);
         log.info("Saved Role : "+Utility.toJson(savedRole));
         RedisHelper redisHelper=new RedisHelper(redisTemplate);
-        redisHelper.addOrUpdateRoleDetailsToRedis(savedRole,"member");
+        redisHelper.addOrUpdateRoleDetailsToRedis(savedRole,"role");
         return ModelMapperUtility.map(savedRole, RoleDTO.class);
     }
 
@@ -100,7 +100,7 @@ public class RoleAndPermissionService {
         Role savedRole=roleRepository.save(role);
         log.info("Saved Permission to the Role : "+Utility.toJson(savedRole));
         RedisHelper redisHelper=new RedisHelper(redisTemplate);
-        redisHelper.addOrUpdateRoleDetailsToRedis(role,"member");
+        redisHelper.addOrUpdateRoleDetailsToRedis(role,"role");
         return ModelMapperUtility.map(savedRole,RoleDTO.class);
     }
 

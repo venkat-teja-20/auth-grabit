@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,11 +76,13 @@ public class LoginOrSignupService {
 //                throw new CustomException(Utility.buildErrorObject("INVALID_USER", "Only role 'USER' is allowed for a member", 400, "signUp"));
 //            MemberDTO memberSignUpRequest = ModelMapperUtility.map(request, MemberDTO.class);
 //            response = memberInterface.createMemberProfile(memberSignUpRequest, null);
-            Long id = roleRepository.findIdByRole(RolesList.ADMIN).orElseThrow(() -> new EntityNotFoundException("No role exists with role : " + RolesList.ADMIN));
+            Role role = roleRepository.findByRole(RolesList.ADMIN).orElseThrow(() -> new EntityNotFoundException("No role exists with role : " + RolesList.ADMIN));
 //            if (response.getBody() == null) {
 //                throw new CustomException(Utility.buildErrorObject("INVALID_RESPONSE", "No Response from member service", 500, "signUp"));
 //            }
-            return ResponseEntity.ok(Map.of("Authorization", JWTUtil.generateTokenForAdmin(email, id)));
+            List<Long> permissionIds=role.getPermissions().stream().map(Permission::getId).toList();
+
+            return ResponseEntity.ok(Map.of("Authorization", JWTUtil.generateTokenForAdmin(email, role.getId(),permissionIds)));
         } catch (Exception e) {
 //            if(response!=null && response.hasBody() && response.getStatusCode().is2xxSuccessful()){
 //                memberInterface.memberDelete(String.valueOf(response.getBody().getId()));

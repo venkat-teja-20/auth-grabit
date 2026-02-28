@@ -71,10 +71,11 @@ public class JWTUtil {
                 .compact();
     }
 
-    public static String generateTokenForAdmin(String email,Long roleId){
+    public static String generateTokenForAdmin(String email,Long roleId,List<Long> permissionIds){
         Map<String,Object> claims=new HashMap<>();
         claims.put("role",roleId);
         claims.put("access_level","admin");
+        claims.put("permissions", permissionIds);
         long now = System.currentTimeMillis();
         Date iat = new Date(now);
         Date exp = new Date(now + REFRESH_EXPIRATION_TIME);
